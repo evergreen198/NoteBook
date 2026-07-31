@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import authRoutes from './routes/auth.js';
 import notesRoutes from './routes/notes.js';
+const cors = require("cors");
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -19,7 +20,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/notes', notesRoutes);
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
-
+app.use(cors({
+  origin: "https://note-book-gamma-five.vercel.app/"
+}));
 // API 404
 app.use('/api', (req, res) => res.status(404).json({ error: '接口不存在' }));
 
