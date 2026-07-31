@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import authRoutes from './routes/auth.js';
 import notesRoutes from './routes/notes.js';
-const cors = require("cors");
+import cors from 'cors'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
