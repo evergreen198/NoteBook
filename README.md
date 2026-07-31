@@ -1,18 +1,18 @@
-# 📒 Notebook — 端到端加密的个人笔记本
+# Notebook — 端到端加密的个人笔记本
 
 一个**零知识架构**的个人笔记应用:笔记在你的浏览器里加密后才上传,服务器和数据库里存的全是密文。即使数据库泄露,没有你的密码也无法读出任何内容。
 
-## ✨ 特性
+## 特性
 
-- 🔐 **端到端加密(E2EE)**:PBKDF2-SHA256(60 万次迭代)从密码派生 AES-256-GCM 密钥,加解密全部在浏览器完成
-- 🙈 **服务器零知识**:服务器只存密文 + IV,密钥从不离开浏览器(仅以原始字节暂存 sessionStorage,关闭标签页即清除)
-- 👤 **认证体系**:bcrypt 哈希密码 + JWT(httpOnly Cookie,防 XSS 窃取)
-- 📝 **Markdown 支持**:marked 渲染 + DOMPurify 消毒(防 XSS)
-- 🗄️ **轻量部署**:Express + better-sqlite3,单文件数据库,无需外部服务
-- 🎨 **界面**:React 18,白底 + 淡暖黄的"线性美学"设计
-- 👥 **可拓展**:数据按用户隔离,默认单用户(注册后可关闭注册),也支持多用户
+-**端到端加密(E2EE)**:PBKDF2-SHA256(60 万次迭代)从密码派生 AES-256-GCM 密钥,加解密全部在浏览器完成
+-**服务器零知识**:服务器只存密文 + IV,密钥从不离开浏览器(仅以原始字节暂存 sessionStorage,关闭标签页即清除)
+-**认证体系**:bcrypt 哈希密码 + JWT(httpOnly Cookie,防 XSS 窃取)
+-**Markdown 支持**:marked 渲染 + DOMPurify 消毒(防 XSS)
+-**轻量部署**:Express + better-sqlite3,单文件数据库,无需外部服务
+-**界面**:React 18,白底 + 淡暖黄的"线性美学"设计
+-**可拓展**:数据按用户隔离,默认单用户(注册后可关闭注册),也支持多用户
 
-## 🏗️ 技术栈
+## 技术栈
 
 | 层 | 技术 |
 |---|---|
@@ -21,7 +21,7 @@
 | 数据库 | SQLite(better-sqlite3) |
 | 认证 | bcryptjs + jsonwebtoken(httpOnly Cookie) |
 
-## 🚀 快速开始
+## 快速开始
 
 ```bash
 # 1. 安装依赖
@@ -38,7 +38,7 @@ npm run dev
 
 打开 http://localhost:5173 → 注册账号 → 开始写笔记。
 
-## 📦 生产部署
+## 生产部署
 
 ```bash
 # 构建前端到 dist/,然后由 Express 统一伺服(API + 静态文件,单端口)
@@ -54,7 +54,7 @@ npm start          # NODE_ENV=production,Cookie 自动加 Secure(需 HTTPS)
 - **数据备份**:只需备份 `.env` 中 `DB_PATH` 指向的 SQLite 文件(默认 `./data/notebook.db`)。
 - **忘记密码 = 数据不可恢复**:这是零知识加密的固有属性,请在界面和心里都牢记。
 
-## 🔌 API 一览
+## API 一览
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
@@ -69,7 +69,7 @@ npm start          # NODE_ENV=production,Cookie 自动加 Secure(需 HTTPS)
 
 所有笔记接口需登录,且严格按 `user_id` 隔离。
 
-## 🔒 加密流程
+## 加密流程
 
 ```
 注册: 浏览器生成随机 salt → 上传 { username, bcrypt(密码) 由服务器完成, salt }
@@ -81,7 +81,7 @@ npm start          # NODE_ENV=production,Cookie 自动加 Secure(需 HTTPS)
 - 密钥不可导出地派生,仅在关闭标签页前以原始字节缓存于 `sessionStorage` 供刷新恢复。
 - GCM 自带完整性校验:篡改密文或密钥错误都会导致解密失败(已在测试中验证)。
 
-## 🧪 测试
+## 测试
 
 ```bash
 # 先启动服务器(npm run dev:server),再运行端到端 API 测试(18 项)
@@ -90,7 +90,7 @@ node scripts/test-api.mjs
 
 覆盖:未授权拦截、注册/登录/登出、错误密码、笔记 CRUD、多用户隔离、重复用户名、非法 salt。
 
-## 📁 项目结构
+## 项目结构
 
 ```
 ├── index.html / vite.config.js   # 前端入口与构建配置
@@ -110,6 +110,6 @@ node scripts/test-api.mjs
 └── .env.example                  # 环境变量模板
 ```
 
-## ⚠️ 免责声明
+## 免责声明
 
 个人学习/自用项目。密码学实现基于标准 Web Crypto API,但未经过第三方安全审计,请勿用于高敏感场景。
