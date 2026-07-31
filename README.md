@@ -51,7 +51,7 @@ npm start          # NODE_ENV=production,Cookie 自动加 Secure(需 HTTPS)
 ### 部署注意事项
 
 - **必须 HTTPS**:生产环境 Cookie 带 `Secure` 标记,且 E2EE 密钥只在浏览器内存/sessionStorage;请放在 Nginx/Caddy 反代之后或直接用支持 TLS 的平台。
-- **数据备份**:只需备份 `.env` 中 `DB_PATH` 指向的 SQLite 文件(默认 `./data/notebook.db`)。
+- **数据备份**:只需备份 `.env` 中 `DB_PATH` 指向的 SQLite 文件(默认 `/data/notebook.db`)。
 - **忘记密码 = 数据不可恢复**:这是零知识加密的固有属性,请在界面和心里都牢记。
 
 ## API 一览
