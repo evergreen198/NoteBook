@@ -77,4 +77,13 @@ router.post('/logout', (req, res) => {
   res.json({ ok: true });
 });
 
+/** 导出全部数据(需登录,用于备份/迁移) */
+router.get('/admin/export', requireAuth, (req, res) => {
+  const users = db.prepare('SELECT * FROM users').all();
+  const notes = db.prepare('SELECT * FROM notes').all();
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', `attachment; filename=notebook_backup_${new Date().toISOString().slice(0,10)}.json`);
+  res.json({ exported_at: new Date().toISOString(), version: 1, users, notes });
+});
+
 export default router;
