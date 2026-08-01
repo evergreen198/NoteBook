@@ -8,7 +8,7 @@
 -**服务器零知识**:服务器只存密文 + IV,密钥从不离开浏览器(仅以原始字节暂存 sessionStorage,关闭标签页即清除)
 -**认证体系**:bcrypt 哈希密码 + JWT(httpOnly Cookie,防 XSS 窃取)
 -**Markdown 支持**:marked 渲染 + DOMPurify 消毒(防 XSS)
--**轻量部署**:Express + better-sqlite3,单文件数据库,无需外部服务
+-**轻量部署**:Express + PostgreSQL,支持 Railway 等云平台一键部署
 -**界面**:React 18,白底 + 淡暖黄的"线性美学"设计
 -**可拓展**:数据按用户隔离,默认单用户(注册后可关闭注册),也支持多用户
 
@@ -18,7 +18,7 @@
 |---|---|
 | 前端 | React 18 + Vite 5,Web Crypto API(零加密依赖) |
 | 后端 | Node.js + Express 4 |
-| 数据库 | SQLite(better-sqlite3) |
+| 数据库 | PostgreSQL(pg) |
 | 认证 | bcryptjs + jsonwebtoken(httpOnly Cookie) |
 
 ## 快速开始
@@ -51,7 +51,7 @@ npm start          # NODE_ENV=production,Cookie 自动加 Secure(需 HTTPS)
 ### 部署注意事项
 
 - **必须 HTTPS**:生产环境 Cookie 带 `Secure` 标记,且 E2EE 密钥只在浏览器内存/sessionStorage;请放在 Nginx/Caddy 反代之后或直接用支持 TLS 的平台。
-- **数据备份**:只需备份 `.env` 中 `DB_PATH` 指向的 SQLite 文件(默认 `/data/notebook.db`)。
+- **数据备份**:使用 `pg_dump` 或在 Railway 控制台导出数据库快照。
 - **忘记密码 = 数据不可恢复**:这是零知识加密的固有属性,请在界面和心里都牢记。
 
 ## API 一览
@@ -103,10 +103,12 @@ node scripts/test-api.mjs
 │   └── styles.css                # 线性美学样式
 ├── server/
 │   ├── index.js                  # Express 入口(API + 静态伺服)
-│   ├── db.js                     # SQLite 初始化与 Schema
+│   ├── db.js                     # PostgreSQL 连接池与 Schema
 │   ├── auth.js                   # JWT 中间件
 │   └── routes/auth.js, notes.js  # 路由
 ├── scripts/test-api.mjs          # API 端到端测试
+├── scripts/export-db.mjs         # 数据导出脚本
+├── scripts/import-to-pg.mjs      # PostgreSQL 导入脚本
 └── .env.example                  # 环境变量模板
 ```
 
