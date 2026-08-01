@@ -8,19 +8,26 @@ const router = Router();
 const allowRegistration = () => process.env.ALLOW_REGISTRATION !== 'false';
 
 /** 当前登录状态(前端据此决定渲染登录页还是笔记页) */
-router.get('/me', requireAuth, (req, res) => {
-  const user = db
-    .prepare('SELECT username, salt FROM users WHERE id = ?')
-    .get(req.user.uid);
-  if (!user) return res.status(401).json({ error: '用户不存在' });
-  res.json({
-    username: user.username,
-    salt: user.salt,
-    registrationOpen: allowRegistration(),
-  });
+router.get('/me', requireAuth, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      'SELECT username, salt FROM users WHERE id = $1',
+      [req.user.uid]
+    );
+    const user = rows[0];
+    if (!user) return res.status(401).json({ error: '用户不存在' });
+    res.json({
+      username: user.username,
+      salt: user.salt,
+      registrationOpen: allowRegistration(),
+    });
+  } catch (err) {
+    console.error('GET /me 错误:', err);
+    res.status(500).json({ error: '服务器内部错误' });
+  }
 });
 
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   if (!allowRegistration()) {
     return res.status(403).json({ error: '注册已关闭' });
   }
@@ -36,40 +43,54 @@ router.post('/register', (req, res) => {
     return res.status(400).json({ error: '加密盐格式不正确' });
   }
 
-  const exists = db
-    .prepare('SELECT id FROM users WHERE username = ?')
-    .get(username.trim());
-  if (exists) {
-    return res.status(409).json({ error: '用户名已被占用' });
+  try {
+    const { rows: existing } = await db.query(
+      'SELECT id FROM users WHERE username = $1',
+      [username.trim()]
+    );
+    if (existing.length > 0) {
+      return res.status(409).json({ error: '用户名已被占用' });
+    }
+
+    const passwordHash = bcrypt.hashSync(password, 10);
+    const { rows } = await db.query(
+      'INSERT INTO users (username, password_hash, salt) VALUES ($1, $2, $3) RETURNING id, username',
+      [username.trim(), passwordHash, salt]
+    );
+    const user = rows[0];
+
+    res.cookie(COOKIE_NAME, signToken(user), COOKIE_OPTS);
+    res.status(201).json({ username: user.username, salt });
+  } catch (err) {
+    console.error('注册错误:', err);
+    res.status(500).json({ error: '服务器内部错误' });
   }
-
-  const passwordHash = bcrypt.hashSync(password, 10);
-  const result = db
-    .prepare('INSERT INTO users (username, password_hash, salt) VALUES (?, ?, ?)')
-    .run(username.trim(), passwordHash, salt);
-
-  const user = { id: result.lastInsertRowid, username: username.trim() };
-  res.cookie(COOKIE_NAME, signToken(user), COOKIE_OPTS);
-  res.status(201).json({ username: user.username, salt });
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password } = req.body ?? {};
   if (typeof username !== 'string' || typeof password !== 'string') {
     return res.status(400).json({ error: '请输入用户名和密码' });
   }
 
-  const user = db
-    .prepare('SELECT id, username, password_hash, salt FROM users WHERE username = ?')
-    .get(username.trim());
+  try {
+    const { rows } = await db.query(
+      'SELECT id, username, password_hash, salt FROM users WHERE username = $1',
+      [username.trim()]
+    );
+    const user = rows[0];
 
-  // 统一错误信息,避免暴露用户名是否存在
-  if (!user || !bcrypt.compareSync(password, user.password_hash)) {
-    return res.status(401).json({ error: '用户名或密码错误' });
+    // 统一错误信息,避免暴露用户名是否存在
+    if (!user || !bcrypt.compareSync(password, user.password_hash)) {
+      return res.status(401).json({ error: '用户名或密码错误' });
+    }
+
+    res.cookie(COOKIE_NAME, signToken(user), COOKIE_OPTS);
+    res.json({ username: user.username, salt: user.salt });
+  } catch (err) {
+    console.error('登录错误:', err);
+    res.status(500).json({ error: '服务器内部错误' });
   }
-
-  res.cookie(COOKIE_NAME, signToken(user), COOKIE_OPTS);
-  res.json({ username: user.username, salt: user.salt });
 });
 
 router.post('/logout', (req, res) => {
@@ -78,12 +99,17 @@ router.post('/logout', (req, res) => {
 });
 
 /** 导出全部数据(需登录,用于备份/迁移) */
-router.get('/admin/export', requireAuth, (req, res) => {
-  const users = db.prepare('SELECT * FROM users').all();
-  const notes = db.prepare('SELECT * FROM notes').all();
-  res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Content-Disposition', `attachment; filename=notebook_backup_${new Date().toISOString().slice(0,10)}.json`);
-  res.json({ exported_at: new Date().toISOString(), version: 1, users, notes });
+router.get('/admin/export', requireAuth, async (req, res) => {
+  try {
+    const { rows: users } = await db.query('SELECT * FROM users');
+    const { rows: notes } = await db.query('SELECT * FROM notes');
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename=notebook_backup_${new Date().toISOString().slice(0,10)}.json`);
+    res.json({ exported_at: new Date().toISOString(), version: 1, users, notes });
+  } catch (err) {
+    console.error('导出错误:', err);
+    res.status(500).json({ error: '服务器内部错误' });
+  }
 });
 
 export default router;
