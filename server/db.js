@@ -7,7 +7,7 @@ const { Pool } = pg;
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  console.error('❌ 未设置 DATABASE_URL 环境变量');
+  console.error('   未设置 DATABASE_URL 环境变量');
   console.error('   本地开发: 在 .env 中填写 postgresql://user:pass@localhost:5432/dbname');
   console.error('   Railway:  服务会自动注入,无需手动设置');
   process.exit(1);
