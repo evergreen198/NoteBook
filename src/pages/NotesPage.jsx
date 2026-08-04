@@ -14,10 +14,10 @@ function renderMarkdown(text, headings) {
   if (headings && headings.length > 0) {
     html = addHeadingIds(html, headings);
   }
-  return {
+  return { 
     __html: DOMPurify.sanitize(html, {
-      ADD_ATTR: ['id'], // 允许 id 属性用于锚点跳转
-    }),
+      ADD_ATTR: ['id'] // 允许 id 属性用于锚点跳转
+    }) 
   };
 }
 
@@ -42,17 +42,6 @@ export default function NotesPage({ username, cryptoKey, onLogout }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [activeHeadingId, setActiveHeadingId] = useState('');
   const [isNarrow, setIsNarrow] = useState(window.innerWidth < 1200);
-  const [tocCollapsed, setTocCollapsed] = useState(
-    () => localStorage.getItem('toc-collapsed') === '1'
-  );
-
-  /** 切换目录收起/展开,并持久化 */
-  function toggleToc() {
-    setTocCollapsed((prev) => {
-      localStorage.setItem('toc-collapsed', prev ? '0' : '1');
-      return !prev;
-    });
-  }
 
   const draftRef = useRef(draft);
   draftRef.current = draft;
@@ -368,8 +357,6 @@ export default function NotesPage({ username, cryptoKey, onLogout }) {
             headings={headings}
             activeId={activeHeadingId}
             onItemClick={handleTocClick}
-            collapsed={tocCollapsed}
-            onToggle={toggleToc}
           />
         ) : (
           <TocFab
