@@ -8,14 +8,7 @@ export default function TableOfContents({ headings, activeId, onItemClick }) {
       <aside className="toc">
         <div className="toc-header">目录</div>
         <div className="toc-empty">
-          <p>暂无标题</p>
-          <p className="toc-hint">
-            使用 Markdown 语法创建标题:
-            <br />
-            # 一级标题
-            <br />
-            ## 二级标题
-          </p>
+
         </div>
       </aside>
     );
