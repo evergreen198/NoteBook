@@ -597,6 +597,44 @@ textarea {
   color: var(--ink-sub);
   border-bottom: 1px solid var(--line);
   letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 收起按钮 */
+.toc-toggle {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-sub);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.toc-toggle:hover {
+  background: var(--amber-faint);
+  color: var(--ink);
+}
+
+/* 收起后的展开边条 */
+.toc-expand-strip {
+  width: 28px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--line);
+  background: var(--bg-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-sub);
+  transition: background 0.15s, color 0.15s;
+}
+
+.toc-expand-strip:hover {
+  background: var(--amber-faint);
+  color: var(--ink);
 }
 
 .toc-empty {
@@ -769,9 +807,10 @@ textarea {
 
 /* ---------- 响应式适配 ---------- */
 
-/* 窄屏 (< 1200px): 隐藏右侧导览,显示浮动按钮 */
+/* 窄屏 (< 1200px): 隐藏右侧导览和收起边条,显示浮动按钮 */
 @media (max-width: 1199px) {
-  .toc {
+  .toc,
+  .toc-expand-strip {
     display: none;
   }
 
