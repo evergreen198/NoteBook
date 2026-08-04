@@ -3,11 +3,22 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { api } from '../api.js';
 import { encryptNote, decryptNote } from '../crypto.js';
+import { extractHeadings, addHeadingIds, scrollToHeading } from '../utils/toc.js';
+import TableOfContents from '../components/TableOfContents.jsx';
+import TocFab from '../components/TocFab.jsx';
 
 marked.setOptions({ breaks: true, gfm: true });
 
-function renderMarkdown(text) {
-  return { __html: DOMPurify.sanitize(marked.parse(text || '')) };
+function renderMarkdown(text, headings) {
+  let html = marked.parse(text || '');
+  if (headings && headings.length > 0) {
+    html = addHeadingIds(html, headings);
+  }
+  return { 
+    __html: DOMPurify.sanitize(html, {
+      ADD_ATTR: ['id'] // 允许 id 属性用于锚点跳转
+    }) 
+  };
 }
 
 function formatTime(iso) {
@@ -29,6 +40,8 @@ export default function NotesPage({ username, cryptoKey, onLogout }) {
   const [saving, setSaving] = useState(false);
   const [savedTick, setSavedTick] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [activeHeadingId, setActiveHeadingId] = useState('');
+  const [isNarrow, setIsNarrow] = useState(window.innerWidth < 1200);
 
   const draftRef = useRef(draft);
   draftRef.current = draft;
@@ -38,6 +51,51 @@ export default function NotesPage({ username, cryptoKey, onLogout }) {
   selectedIdRef.current = selectedId;
   const saveTimer = useRef(null);
   const tickTimer = useRef(null);
+
+  /** 提取当前笔记的标题 */
+  const headings = useMemo(() => extractHeadings(draft.content), [draft.content]);
+
+  /** 监听窗口大小变化 */
+  useEffect(() => {
+    const handleResize = () => setIsNarrow(window.innerWidth < 1200);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  /** 监听滚动,高亮当前标题(仅预览模式) */
+  useEffect(() => {
+    if (!preview || headings.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveHeadingId(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: '-80px 0px -80% 0px' }
+    );
+
+    headings.forEach((heading) => {
+      const element = document.getElementById(heading.id);
+      if (element) observer.observe(element);
+    });
+
+    return () => observer.disconnect();
+  }, [headings, preview]);
+
+  /** 点击导览项 */
+  function handleTocClick(heading) {
+    if (!preview) {
+      // 编辑模式: 切换到预览并滚动
+      setPreview(true);
+      setTimeout(() => scrollToHeading(heading.id), 50);
+    } else {
+      // 预览模式: 直接滚动
+      scrollToHeading(heading.id);
+    }
+  }
 
   /** 加载并解密全部笔记 */
   useEffect(() => {
@@ -287,11 +345,26 @@ export default function NotesPage({ username, cryptoKey, onLogout }) {
               <h1 className="preview-title">{draft.title || '无标题'}</h1>
               <div
                 className="markdown"
-                dangerouslySetInnerHTML={renderMarkdown(draft.content)}
+                dangerouslySetInnerHTML={renderMarkdown(draft.content, headings)}
               />
             </div>
           )}
         </section>
+
+        {/* ===== 右侧导览 ===== */}
+        {!isNarrow ? (
+          <TableOfContents
+            headings={headings}
+            activeId={activeHeadingId}
+            onItemClick={handleTocClick}
+          />
+        ) : (
+          <TocFab
+            headings={headings}
+            activeId={activeHeadingId}
+            onItemClick={handleTocClick}
+          />
+        )}
       </div>
     </div>
   );

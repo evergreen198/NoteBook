@@ -216,5 +216,3 @@ cat backups/backup.log
 ## 📞 相关链接
 
 - GitHub 仓库: https://github.com/evergreen198/NoteBook
-- Railway 控制台: https://railway.app/
-- 备份脚本: `scripts/backup-pg.mjs`
