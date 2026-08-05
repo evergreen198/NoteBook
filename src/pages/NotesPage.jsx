@@ -615,17 +615,21 @@ function PreviewWithLinks({ draft, headings, links, activeLinkId, onClickLink })
     const div = document.createElement('div');
     div.innerHTML = baseHtml;
 
-    const matches = findAllMatches(draft.content, links);
-    if (matches.length === 0) return baseHtml;
-
-    // 遍历所有文本节点,查找并包装关联文字
+    // 1. 提取所有文本节点并拼接成完整文本
     const walker = document.createTreeWalker(div, NodeFilter.SHOW_TEXT);
     const textNodes = [];
+    let fullText = '';
     let node;
     while ((node = walker.nextNode())) {
       textNodes.push(node);
+      fullText += node.textContent;
     }
 
+    // 2. 在完整文本中查找关联匹配
+    const matches = findAllMatches(fullText, links);
+    if (matches.length === 0) return baseHtml;
+
+    // 3. 建立文本节点偏移量映射
     let offset = 0;
     const nodeMap = []; // [{ node, start, end }]
     for (const tn of textNodes) {
@@ -633,7 +637,7 @@ function PreviewWithLinks({ draft, headings, links, activeLinkId, onClickLink })
       offset += tn.textContent.length;
     }
 
-    // 从后往前替换,避免偏移量变化
+    // 4. 从后往前替换,避免偏移量变化
     for (let i = matches.length - 1; i >= 0; i--) {
       const m = matches[i];
       const isActive = m.linkId === activeLinkId;
@@ -668,7 +672,7 @@ function PreviewWithLinks({ draft, headings, links, activeLinkId, onClickLink })
     }
 
     return div.innerHTML;
-  }, [baseHtml, draft.content, links, activeLinkId]);
+  }, [baseHtml, links, activeLinkId]);
 
   // 点击事件委托
   useEffect(() => {
