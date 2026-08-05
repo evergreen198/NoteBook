@@ -843,3 +843,179 @@ textarea {
     width: 240px;
   }
 }
+
+/* ============================================================
+   句段关联 · 双层编辑器 · 虚线划线 · 高亮 · 编辑栏
+   ============================================================ */
+
+/* ---- 双层叠加编辑器 ---- */
+.overlay-editor {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--bg);
+}
+
+.overlay-render {
+  position: absolute;
+  inset: 0;
+  padding: 16px 20px;
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-y: auto;
+  pointer-events: none; /* 让点击穿透到 textarea */
+  color: var(--ink);
+}
+
+.overlay-render .overlay-placeholder {
+  color: var(--ink-sub);
+  opacity: 0.5;
+}
+
+.overlay-textarea {
+  position: absolute;
+  inset: 0;
+  padding: 16px 20px;
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  border: none;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: transparent; /* 文字透明 */
+  caret-color: var(--ink); /* 光标可见 */
+  overflow-y: auto;
+  z-index: 1;
+}
+
+.overlay-textarea::selection {
+  background: rgba(245, 217, 122, 0.3); /* 淡黄选区 */
+  color: transparent; /* 选中文字仍透明 */
+}
+
+/* ---- 关联虚线划线 ---- */
+.overlay-link {
+  border-bottom: 1px dashed var(--ink-sub);
+  padding-bottom: 1px;
+}
+
+.overlay-link.overlay-green {
+  border-bottom-color: #7cb342; /* 嫩绿 */
+}
+
+.overlay-link.overlay-blue {
+  border-bottom-color: #42a5f5; /* 天蓝 */
+}
+
+/* 高亮(编辑模式) */
+.overlay-link.overlay-active {
+  padding: 2px 0;
+  border-radius: 2px;
+}
+
+.overlay-link.overlay-active.overlay-green {
+  background: rgba(124, 179, 66, 0.15);
+}
+
+.overlay-link.overlay-active.overlay-blue {
+  background: rgba(66, 165, 245, 0.15);
+}
+
+/* ---- 预览模式关联划线 ---- */
+.preview-link {
+  border-bottom: 1px dashed var(--ink-sub);
+  padding-bottom: 1px;
+  cursor: pointer;
+}
+
+.preview-link.preview-green {
+  border-bottom-color: #7cb342;
+}
+
+.preview-link.preview-blue {
+  border-bottom-color: #42a5f5;
+}
+
+.preview-link.preview-active {
+  padding: 2px 0;
+  border-radius: 2px;
+}
+
+.preview-link.preview-active.preview-green {
+  background: rgba(124, 179, 66, 0.15);
+}
+
+.preview-link.preview-active.preview-blue {
+  background: rgba(66, 165, 245, 0.15);
+}
+
+/* ---- 底部编辑栏 ---- */
+.link-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-top: 1px solid var(--line);
+  background: var(--bg-soft);
+  font-size: 13px;
+}
+
+.link-bar-green {
+  border-top-color: #7cb342;
+}
+
+.link-bar-blue {
+  border-top-color: #42a5f5;
+}
+
+.link-bar-label {
+  color: var(--ink-sub);
+  font-weight: 500;
+}
+
+.link-bar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.link-bar-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--line-dark);
+  border-radius: 3px;
+  background: var(--bg);
+  font-size: 13px;
+  transition: none; /* 零动画 */
+}
+
+.link-bar-btn:hover:not(:disabled) {
+  border-color: var(--ink-sub);
+}
+
+.link-bar-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.link-bar-btn.link-bar-danger {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.link-bar-btn.link-bar-confirm {
+  color: #7cb342;
+  border-color: #7cb342;
+  font-weight: 600;
+}
+
+.link-bar-btn.link-bar-cancel {
+  color: var(--ink-sub);
+  font-weight: 600;
+}
